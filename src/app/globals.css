@@ -1,0 +1,308 @@
+@import "tailwindcss";
+
+/* ------------------------------------------------------------------ *
+ * theme tokens — "a victorian ghost hunter with a pink neon sign"
+ * ------------------------------------------------------------------ */
+@theme {
+  --color-ink: #0a0a0c;
+  --color-ink-2: #101015;
+  --color-ink-3: #16151b;
+  --color-bone: #f5f0f0;
+  --color-ash: #9b9298;
+  --color-rose-soft: #ffafcc;
+  --color-rose: #ff8fab;
+  --color-rose-deep: #fb6f92;
+  --color-blood: #c1121f;
+
+  --font-display: var(--font-fraunces), Georgia, "Times New Roman", serif;
+  --font-mono: var(--font-space-mono), ui-monospace, "Courier New", monospace;
+  --font-body: var(--font-fraunces), Georgia, serif;
+}
+
+/* ------------------------------------------------------------------ *
+ * base
+ * ------------------------------------------------------------------ */
+:root {
+  color-scheme: dark;
+  --flash-x: 50vw;
+  --flash-y: 50vh;
+}
+
+html {
+  scroll-behavior: smooth;
+  background: var(--color-ink);
+  overflow-x: hidden;
+}
+
+body {
+  background: var(--color-ink);
+  color: var(--color-bone);
+  font-family: var(--font-body);
+  font-optical-sizing: auto;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+::selection {
+  background: var(--color-rose-deep);
+  color: var(--color-ink);
+}
+
+/* thin candlelit scrollbar */
+::-webkit-scrollbar {
+  width: 10px;
+}
+::-webkit-scrollbar-track {
+  background: var(--color-ink);
+}
+::-webkit-scrollbar-thumb {
+  background: color-mix(in oklab, var(--color-rose-deep) 40%, var(--color-ink));
+  border-radius: 999px;
+}
+
+/* focus is a neon ring, never removed */
+:where(a, button, input, [tabindex]):focus-visible {
+  outline: 2px solid var(--color-rose);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* skip link */
+.skip-link {
+  position: fixed;
+  left: 1rem;
+  top: -100px;
+  z-index: 200;
+  padding: 0.6rem 1rem;
+  background: var(--color-rose-deep);
+  color: var(--color-ink);
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  border-radius: 4px;
+  transition: top 0.2s;
+}
+.skip-link:focus {
+  top: 1rem;
+}
+
+/* ------------------------------------------------------------------ *
+ * texture: film grain + fog (one canvas is grain; these are CSS)
+ * ------------------------------------------------------------------ */
+.scanlines::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 40;
+  background: repeating-linear-gradient(
+    0deg,
+    rgba(0, 0, 0, 0) 0px,
+    rgba(0, 0, 0, 0) 2px,
+    rgba(0, 0, 0, 0.035) 3px,
+    rgba(0, 0, 0, 0.035) 4px
+  );
+  mix-blend-mode: multiply;
+}
+
+/* flashlight: dim scrim with a hole at the cursor. content stays lit;
+   the world around dims so spectral marginalia only glow in the beam. */
+.flashlight-scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  pointer-events: none;
+  background: radial-gradient(
+    circle 220px at var(--flash-x) var(--flash-y),
+    transparent 0%,
+    transparent 38%,
+    rgba(5, 5, 8, 0.26) 80%,
+    rgba(5, 5, 8, 0.42) 100%
+  );
+  transition: opacity 0.4s ease;
+}
+
+/* the soft pink beam glow itself */
+.flashlight-glow {
+  position: fixed;
+  inset: 0;
+  z-index: 31;
+  pointer-events: none;
+  background: radial-gradient(
+    circle 200px at var(--flash-x) var(--flash-y),
+    color-mix(in oklab, var(--color-rose-soft) 22%, transparent) 0%,
+    transparent 60%
+  );
+  mix-blend-mode: screen;
+}
+
+/* spectral annotations: invisible in the dark, revealed by the beam */
+.spectral-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 32;
+  pointer-events: none;
+  -webkit-mask-image: radial-gradient(
+    circle 170px at var(--flash-x) var(--flash-y),
+    #000 0%,
+    #000 40%,
+    transparent 78%
+  );
+  mask-image: radial-gradient(
+    circle 170px at var(--flash-x) var(--flash-y),
+    #000 0%,
+    #000 40%,
+    transparent 78%
+  );
+}
+.spectral-note {
+  position: absolute;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  line-height: 1.3;
+  color: color-mix(in oklab, var(--color-rose-soft) 80%, white);
+  text-shadow: 0 0 8px color-mix(in oklab, var(--color-rose-deep) 60%, transparent);
+  max-width: 15rem;
+}
+
+/* spectral marginalia are a desktop-pointer flourish — off on small screens
+   where they'd overlap the content. */
+@media (max-width: 640px) {
+  .spectral-layer {
+    display: none;
+  }
+}
+
+/* touch: the beam is hidden until a finger is held down (tap-and-hold reveal) */
+@media (hover: none) {
+  .flashlight-glow,
+  .spectral-layer {
+    opacity: 0;
+    transition: opacity 0.25s ease;
+  }
+  html.touch-reveal .flashlight-glow,
+  html.touch-reveal .spectral-layer {
+    opacity: 1;
+  }
+}
+
+/* ------------------------------------------------------------------ *
+ * case-file artifacts
+ * ------------------------------------------------------------------ */
+.stamp {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  border: 3px solid currentColor;
+  border-radius: 4px;
+  padding: 0.15em 0.5em;
+  color: var(--color-blood);
+  display: inline-block;
+}
+
+.redaction {
+  background: var(--color-bone);
+  color: transparent;
+  border-radius: 2px;
+  user-select: none;
+}
+
+.paper-tag {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--color-ash);
+}
+
+/* hairline dividers */
+.hairline {
+  border-color: color-mix(in oklab, var(--color-bone) 14%, transparent);
+}
+
+/* ------------------------------------------------------------------ *
+ * keyframes (all disabled under reduced motion below)
+ * ------------------------------------------------------------------ */
+@keyframes flicker-soft {
+  0%, 100% { opacity: 1; }
+  92% { opacity: 1; }
+  93% { opacity: 0.4; }
+  94% { opacity: 1; }
+  96% { opacity: 0.7; }
+  97% { opacity: 1; }
+}
+.flicker {
+  animation: flicker-soft 6s infinite steps(1);
+}
+
+@keyframes fog-drift {
+  from { transform: translate3d(-5%, 0, 0); }
+  to { transform: translate3d(5%, 0, 0); }
+}
+.fog {
+  position: fixed;
+  inset: -20% 0 auto 0;
+  height: 60vh;
+  z-index: 1;
+  pointer-events: none;
+  background: radial-gradient(
+    60% 80% at 50% 0%,
+    color-mix(in oklab, var(--color-rose-deep) 10%, transparent),
+    transparent 70%
+  );
+  animation: fog-drift 26s ease-in-out infinite alternate;
+  filter: blur(30px);
+}
+
+@keyframes neon-buzz {
+  0%, 100% { text-shadow: 0 0 12px color-mix(in oklab, var(--color-rose-deep) 55%, transparent), 0 0 40px color-mix(in oklab, var(--color-rose-deep) 25%, transparent); }
+  50% { text-shadow: 0 0 8px color-mix(in oklab, var(--color-rose-deep) 40%, transparent), 0 0 28px color-mix(in oklab, var(--color-rose-deep) 15%, transparent); }
+}
+.neon {
+  animation: neon-buzz 4s ease-in-out infinite;
+}
+
+.grain-canvas {
+  position: fixed;
+  inset: 0;
+  z-index: 45;
+  pointer-events: none;
+  opacity: 0.05;
+  mix-blend-mode: overlay;
+}
+
+/* ------------------------------------------------------------------ *
+ * reduced motion — a complete, calm experience
+ * ------------------------------------------------------------------ */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+  .fog,
+  .grain-canvas {
+    display: none;
+  }
+  /* calm static reveal of spectral notes, no beam required */
+  .spectral-layer {
+    -webkit-mask-image: none !important;
+    mask-image: none !important;
+    opacity: 0.4;
+  }
+  .flashlight-scrim,
+  .flashlight-glow {
+    opacity: 0 !important;
+  }
+}
